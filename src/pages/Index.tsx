@@ -36,6 +36,16 @@ function Index() {
     )
   }
 
+  if (storage.loading) {
+    return (
+      <div className="app-shell">
+        <div className="empty-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+          <p>Carregando...</p>
+        </div>
+      </div>
+    )
+  }
+
   const go = (s: Screen, exp?: Experience) => {
     if (exp) setSelectedExp(exp)
     setScreen(s)
