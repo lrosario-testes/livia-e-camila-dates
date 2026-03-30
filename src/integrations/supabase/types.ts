@@ -14,7 +14,92 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      experiences: {
+        Row: {
+          comida_tipo: string | null
+          compra_tipo: string | null
+          created_at: string
+          date: string
+          id: string
+          is_caranguejo: boolean | null
+          is_delivery: boolean | null
+          name: string
+          nocinema: boolean | null
+          restaurante_tipo: string | null
+          status: string
+          tags: string[] | null
+          type: string
+        }
+        Insert: {
+          comida_tipo?: string | null
+          compra_tipo?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          is_caranguejo?: boolean | null
+          is_delivery?: boolean | null
+          name: string
+          nocinema?: boolean | null
+          restaurante_tipo?: string | null
+          status?: string
+          tags?: string[] | null
+          type: string
+        }
+        Update: {
+          comida_tipo?: string | null
+          compra_tipo?: string | null
+          created_at?: string
+          date?: string
+          id?: string
+          is_caranguejo?: boolean | null
+          is_delivery?: boolean | null
+          name?: string
+          nocinema?: boolean | null
+          restaurante_tipo?: string | null
+          status?: string
+          tags?: string[] | null
+          type?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          average: number
+          comments: string | null
+          created_at: string
+          experience_id: string
+          id: string
+          ratings: Json
+          user_name: string
+        }
+        Insert: {
+          average?: number
+          comments?: string | null
+          created_at?: string
+          experience_id: string
+          id?: string
+          ratings?: Json
+          user_name: string
+        }
+        Update: {
+          average?: number
+          comments?: string | null
+          created_at?: string
+          experience_id?: string
+          id?: string
+          ratings?: Json
+          user_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_experience_id_fkey"
+            columns: ["experience_id"]
+            isOneToOne: false
+            referencedRelation: "experiences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
