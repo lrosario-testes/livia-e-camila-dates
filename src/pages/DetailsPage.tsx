@@ -31,7 +31,8 @@ export function DetailsPage({ experience, reviews, currentUser, onNavigate, onDe
     onNavigate('feed')
   }
 
-  const formatDate = (d: string) => {
+  const formatDate = (d: string, unknown?: boolean) => {
+    if (unknown || !d) return null
     try {
       return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', {
         day: '2-digit', month: 'long', year: 'numeric'
@@ -42,6 +43,8 @@ export function DetailsPage({ experience, reviews, currentUser, onNavigate, onDe
   const combined = expReviews.length > 0
     ? Math.round(expReviews.reduce((s, r) => s + r.average, 0) / expReviews.length * 10) / 10
     : null
+
+  const dateStr = formatDate(experience.date, experience.dateUnknown)
 
   return (
     <>
@@ -60,18 +63,14 @@ export function DetailsPage({ experience, reviews, currentUser, onNavigate, onDe
           <ExperienceChip experience={experience} large />
           <h1 className="details-name">{experience.name}</h1>
           <div className="details-meta">
-            <span><Calendar size={13} /> {formatDate(experience.date)}</span>
+            {dateStr && <span><Calendar size={13} /> {dateStr}</span>}
+            {!dateStr && <span>Sem data definida</span>}
           </div>
           {combined !== null && (
             <div className="details-combined-score">
               <span className="details-score-num">{combined}</span>
               <span className="details-score-star">★</span>
               <span className="details-score-label">média do casal</span>
-            </div>
-          )}
-          {experience.tags.length > 0 && (
-            <div className="mini-tags" style={{ justifyContent: 'center', marginTop: 8 }}>
-              {experience.tags.map(t => <span key={t} className="mini-tag">{t}</span>)}
             </div>
           )}
         </div>
@@ -116,6 +115,12 @@ export function DetailsPage({ experience, reviews, currentUser, onNavigate, onDe
 
               {review.comments && (
                 <div className="review-comment">"{review.comments}"</div>
+              )}
+
+              {(review.tags || []).length > 0 && (
+                <div className="mini-tags" style={{ marginTop: 8 }}>
+                  {review.tags.map(t => <span key={t} className="mini-tag">{t}</span>)}
+                </div>
               )}
             </div>
           )

@@ -72,6 +72,7 @@ function Index() {
             <NewExperiencePage
               onNavigate={go}
               onSave={storage.saveExperience}
+              active={screen === 'new-experience'}
             />
           )}
           {s === 'review' && selectedExp && (

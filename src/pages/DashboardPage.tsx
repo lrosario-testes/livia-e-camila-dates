@@ -1,6 +1,6 @@
-import { Experience, Review, ExperienceType, typeLabels } from '../types'
+import { Experience, Review, ExperienceType, typeLabels, comidaTipoLabels, ComidaTipo } from '../types'
 import { Screen } from './Index'
-import { ChevronLeft, TrendingUp, Award, ThumbsDown, BarChart2 } from 'lucide-react'
+import { ChevronLeft, Award, Star, Utensils, Film, ShoppingBag } from 'lucide-react'
 import { useState } from 'react'
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function DashboardPage({ experiences, reviews, onNavigate }: Props) {
-  const [tab, setTab] = useState<'geral' | 'ranking'>('geral')
+  const [tab, setTab] = useState<'resumo' | 'ranking' | 'categorias'>('resumo')
 
   const getAvg = (expId: string) => {
     const rs = reviews.filter(r => r.experienceId === expId)
@@ -25,31 +25,39 @@ export function DashboardPage({ experiences, reviews, onNavigate }: Props) {
     .filter(x => x.avg !== null)
     .sort((a, b) => b.avg - a.avg)
 
-  const best = withAvg[0] || null
-  const worst = [...withAvg].sort((a, b) => a.avg - b.avg)[0] || null
+  const totalAvaliadas = evaluated.length
+  const totalPendentes = experiences.length - totalAvaliadas
+  const avgGeral = withAvg.length === 0 ? null :
+    Math.round(withAvg.reduce((s, x) => s + x.avg, 0) / withAvg.length * 10) / 10
 
-  const totalReviews = reviews.length
-  const avgGeral = totalReviews === 0 ? null :
-    Math.round(reviews.reduce((s, r) => s + r.average, 0) / totalReviews * 10) / 10
-
-  const byType = (['comida', 'filme', 'compra'] as ExperienceType[]).map(type => {
-    const exps = evaluated.filter(e => e.type === type)
+  // Per-category stats
+  const categoryStats = (['comida', 'filme', 'compra'] as ExperienceType[]).map(type => {
+    const exps = withAvg.filter(x => x.exp.type === type)
     const count = exps.length
-    const avg = count === 0 ? null : Math.round(
-      exps.map(e => getAvg(e.id)!).filter(v => v != null).reduce((a, b) => a + b, 0) / count * 10
-    ) / 10
-    return { type, count, avg }
+    const avg = count === 0 ? null : Math.round(exps.reduce((s, x) => s + x.avg, 0) / count * 10) / 10
+    const best = exps.length > 0 ? exps[0] : null
+    const worst = exps.length > 1 ? exps[exps.length - 1] : null
+    return { type, count, avg, best, worst }
   })
 
-  const liviaAvg = reviews.filter(r => r.userName === 'livia').length > 0
-    ? Math.round(reviews.filter(r => r.userName === 'livia').reduce((s, r) => s + r.average, 0) /
-      reviews.filter(r => r.userName === 'livia').length * 10) / 10
-    : null
+  // Comida subcategory stats
+  const comidaSubStats = (['gelateria', 'cafeteria', 'restaurante'] as ComidaTipo[]).map(sub => {
+    const exps = withAvg.filter(x => x.exp.type === 'comida' && x.exp.comidaTipo === sub)
+    const count = exps.length
+    const avg = count === 0 ? null : Math.round(exps.reduce((s, x) => s + x.avg, 0) / count * 10) / 10
+    return { sub, count, avg }
+  })
 
-  const camilaAvg = reviews.filter(r => r.userName === 'camila').length > 0
-    ? Math.round(reviews.filter(r => r.userName === 'camila').reduce((s, r) => s + r.average, 0) /
-      reviews.filter(r => r.userName === 'camila').length * 10) / 10
-    : null
+  // Most used tags across reviews
+  const tagCounts: Record<string, number> = {}
+  reviews.forEach(r => (r.tags || []).forEach(t => { tagCounts[t] = (tagCounts[t] || 0) + 1 }))
+  const topTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5)
+
+  const typeIcon = (type: ExperienceType) => {
+    if (type === 'comida') return <Utensils size={14} />
+    if (type === 'filme') return <Film size={14} />
+    return <ShoppingBag size={14} />
+  }
 
   return (
     <>
@@ -63,19 +71,22 @@ export function DashboardPage({ experiences, reviews, onNavigate }: Props) {
 
       <div className="screen-content">
         <div className="tab-row">
-          <button className={`tab-btn ${tab === 'geral' ? 'tab-active' : ''}`} onClick={() => setTab('geral')}>
-            <BarChart2 size={15} /> Geral
+          <button className={`tab-btn ${tab === 'resumo' ? 'tab-active' : ''}`} onClick={() => setTab('resumo')}>
+            <Star size={15} /> Resumo
+          </button>
+          <button className={`tab-btn ${tab === 'categorias' ? 'tab-active' : ''}`} onClick={() => setTab('categorias')}>
+            <Utensils size={15} /> Categorias
           </button>
           <button className={`tab-btn ${tab === 'ranking' ? 'tab-active' : ''}`} onClick={() => setTab('ranking')}>
             <Award size={15} /> Ranking
           </button>
         </div>
 
-        {tab === 'geral' && (
+        {tab === 'resumo' && (
           <>
             <div className="stats-grid">
               <div className="stat-block">
-                <div className="stat-val">{evaluated.length}</div>
+                <div className="stat-val">{totalAvaliadas}</div>
                 <div className="stat-lbl">avaliadas</div>
               </div>
               <div className="stat-block">
@@ -83,61 +94,87 @@ export function DashboardPage({ experiences, reviews, onNavigate }: Props) {
                 <div className="stat-lbl">média geral</div>
               </div>
               <div className="stat-block">
-                <div className="stat-val">{experiences.filter(e => e.status === 'pendente').length}</div>
+                <div className="stat-val">{totalPendentes}</div>
                 <div className="stat-lbl">pendentes</div>
               </div>
             </div>
 
-            <div className="section-title">Por categoria</div>
+            <div className="section-title">Por tipo</div>
             <div className="type-rows">
-              {byType.map(({ type, count, avg }) => (
+              {categoryStats.map(({ type, count, avg }) => (
                 <div key={type} className="type-row">
+                  <span className="type-row-icon">{typeIcon(type)}</span>
                   <span className="type-row-label">{typeLabels[type]}</span>
-                  <div className="type-row-bar-wrap">
-                    <div
-                      className="type-row-bar"
-                      style={{ width: evaluated.length > 0 ? `${(count / evaluated.length) * 100}%` : '0%' }}
-                    />
-                  </div>
                   <span className="type-row-count">{count}</span>
                   <span className="type-row-avg">{avg ?? '—'} ★</span>
                 </div>
               ))}
             </div>
 
-            <div className="section-title">Comparativo do casal</div>
-            <div className="couple-compare">
-              <div className="couple-card">
-                <div className="avatar-sm avatar-livia" />
-                <div className="couple-name">Lívia</div>
-                <div className="couple-avg">{liviaAvg ?? '—'}</div>
-              </div>
-              <div className="couple-vs">vs</div>
-              <div className="couple-card">
-                <div className="avatar-sm avatar-camila" />
-                <div className="couple-name">Camila</div>
-                <div className="couple-avg">{camilaAvg ?? '—'}</div>
-              </div>
-            </div>
-
-            {best && (
-              <div className="section-title"><TrendingUp size={15} /> Melhor avaliada</div>
-            )}
-            {best && (
-              <div className="highlight-card highlight-best">
-                <span className="highlight-name">{best.exp.name}</span>
-                <span className="highlight-score">{best.avg} ★</span>
-              </div>
-            )}
-            {worst && worst.exp.id !== best?.exp.id && (
+            {topTags.length > 0 && (
               <>
-                <div className="section-title"><ThumbsDown size={15} /> Pior avaliada</div>
-                <div className="highlight-card highlight-worst">
-                  <span className="highlight-name">{worst.exp.name}</span>
-                  <span className="highlight-score">{worst.avg} ★</span>
+                <div className="section-title">Tags mais usadas</div>
+                <div className="mini-tags" style={{ justifyContent: 'flex-start', gap: 8 }}>
+                  {topTags.map(([tag, count]) => (
+                    <span key={tag} className="mini-tag">{tag} ({count})</span>
+                  ))}
                 </div>
               </>
             )}
+
+            {withAvg.length > 0 && (
+              <>
+                <div className="section-title">Destaques</div>
+                <div className="highlight-card highlight-best">
+                  <span className="highlight-label">Melhor</span>
+                  <span className="highlight-name">{withAvg[0].exp.name}</span>
+                  <span className="highlight-score">{withAvg[0].avg} ★</span>
+                </div>
+                {withAvg.length > 1 && (
+                  <div className="highlight-card highlight-worst" style={{ marginTop: 8 }}>
+                    <span className="highlight-label">Pior</span>
+                    <span className="highlight-name">{withAvg[withAvg.length - 1].exp.name}</span>
+                    <span className="highlight-score">{withAvg[withAvg.length - 1].avg} ★</span>
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        )}
+
+        {tab === 'categorias' && (
+          <>
+            {categoryStats.map(({ type, count, avg, best, worst }) => (
+              <div key={type} className="category-section">
+                <div className="category-header">
+                  <span className="category-icon">{typeIcon(type)}</span>
+                  <span className="category-title">{typeLabels[type]}</span>
+                  <span className="category-count">{count} avaliadas</span>
+                </div>
+                {count === 0 ? (
+                  <p className="category-empty">Nenhuma avaliação ainda</p>
+                ) : (
+                  <>
+                    <div className="category-avg">Média: <strong>{avg} ★</strong></div>
+                    {best && <div className="category-highlight">Melhor: {best.exp.name} ({best.avg} ★)</div>}
+                    {worst && worst.exp.id !== best?.exp.id && (
+                      <div className="category-highlight">Pior: {worst.exp.name} ({worst.avg} ★)</div>
+                    )}
+                  </>
+                )}
+
+                {type === 'comida' && (
+                  <div className="subcategory-list">
+                    {comidaSubStats.filter(s => s.count > 0).map(({ sub, count: c, avg: a }) => (
+                      <div key={sub} className="subcategory-row">
+                        <span>{comidaTipoLabels[sub]}</span>
+                        <span>{c}x · {a} ★</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
           </>
         )}
 

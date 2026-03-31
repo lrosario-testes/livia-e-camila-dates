@@ -24,7 +24,12 @@ export function FeedPage({ experiences, reviews, onNavigate, onSelectExp }: Prop
     ? evaluated
     : evaluated.filter(e => e.type === filter)
 
-  const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  const sorted = [...filtered].sort((a, b) => {
+    // Items without dates go to the end
+    if (a.dateUnknown && !b.dateUnknown) return 1
+    if (!a.dateUnknown && b.dateUnknown) return -1
+    return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
+  })
 
   const getExpReviews = (expId: string) => reviews.filter(r => r.experienceId === expId)
 
@@ -32,6 +37,23 @@ export function FeedPage({ experiences, reviews, onNavigate, onSelectExp }: Prop
     if (rs.length === 0) return null
     const avg = rs.reduce((s, r) => s + r.average, 0) / rs.length
     return Math.round(avg * 10) / 10
+  }
+
+  const formatDate = (d: string, unknown?: boolean) => {
+    if (unknown || !d) return 'Sem data'
+    try {
+      return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      })
+    } catch { return d }
+  }
+
+  // Collect all tags from reviews for each experience
+  const getExpTags = (expId: string) => {
+    const expRevs = reviews.filter(r => r.experienceId === expId)
+    const allTags = new Set<string>()
+    expRevs.forEach(r => (r.tags || []).forEach(t => allTags.add(t)))
+    return Array.from(allTags)
   }
 
   return (
@@ -71,6 +93,7 @@ export function FeedPage({ experiences, reviews, onNavigate, onSelectExp }: Prop
               const expRevs = getExpReviews(exp.id)
               const combined = avgOf(expRevs)
               const bothReviewed = expRevs.length >= 2
+              const expTags = getExpTags(exp.id)
 
               return (
                 <div key={exp.id} className="feed-card" onClick={() => onSelectExp(exp)}>
@@ -85,11 +108,7 @@ export function FeedPage({ experiences, reviews, onNavigate, onSelectExp }: Prop
                   </div>
 
                   <div className="feed-card-name">{exp.name}</div>
-                  <div className="feed-card-date">
-                    {new Date(exp.date + 'T12:00:00').toLocaleDateString('pt-BR', {
-                      day: '2-digit', month: 'long', year: 'numeric'
-                    })}
-                  </div>
+                  <div className="feed-card-date">{formatDate(exp.date, exp.dateUnknown)}</div>
 
                   <div className="feed-card-users">
                     {expRevs.map(r => (
@@ -104,9 +123,9 @@ export function FeedPage({ experiences, reviews, onNavigate, onSelectExp }: Prop
                     )}
                   </div>
 
-                  {exp.tags.length > 0 && (
+                  {expTags.length > 0 && (
                     <div className="mini-tags" style={{ marginTop: 8 }}>
-                      {exp.tags.map(t => <span key={t} className="mini-tag">{t}</span>)}
+                      {expTags.map(t => <span key={t} className="mini-tag">{t}</span>)}
                     </div>
                   )}
                 </div>
