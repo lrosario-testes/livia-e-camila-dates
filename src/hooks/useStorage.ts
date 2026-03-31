@@ -11,9 +11,11 @@ function dbToExperience(row: any): Experience {
     isDelivery: row.is_delivery ?? false,
     isCaranguejo: row.is_caranguejo ?? false,
     compraTipo: row.compra_tipo || undefined,
+    produtoNome: row.produto_nome || undefined,
     nocinema: row.nocinema ?? false,
     name: row.name,
     date: row.date,
+    dateUnknown: row.date_unknown ?? false,
     tags: row.tags || [],
     status: row.status,
     createdAt: row.created_at,
@@ -28,6 +30,7 @@ function dbToReview(row: any): Review {
     ratings: row.ratings as Record<string, number>,
     average: Number(row.average),
     comments: row.comments,
+    tags: row.tags || [],
     createdAt: row.created_at,
   }
 }
@@ -37,7 +40,6 @@ export function useStorage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Load data from Supabase on mount
   useEffect(() => {
     async function load() {
       const [expRes, revRes] = await Promise.all([
@@ -60,9 +62,11 @@ export function useStorage() {
       is_delivery: exp.isDelivery ?? false,
       is_caranguejo: exp.isCaranguejo ?? false,
       compra_tipo: exp.compraTipo || null,
+      produto_nome: exp.produtoNome || null,
       nocinema: exp.nocinema ?? false,
       name: exp.name,
-      date: exp.date,
+      date: exp.dateUnknown ? null : exp.date,
+      date_unknown: exp.dateUnknown ?? false,
       tags: exp.tags,
       status: exp.status,
       created_at: exp.createdAt,
@@ -96,14 +100,13 @@ export function useStorage() {
       ratings: review.ratings,
       average: review.average,
       comments: review.comments,
+      tags: review.tags,
       created_at: review.createdAt,
     })
 
     if (!error) {
       setReviews(prev => {
         const updated = [review, ...prev]
-
-        // Check if both reviewed → update status
         const expReviews = updated.filter(r => r.experienceId === review.experienceId)
         const users = new Set(expReviews.map(r => r.userName))
         if (users.has('livia') && users.has('camila')) {
@@ -114,7 +117,6 @@ export function useStorage() {
             )
           )
         }
-
         return updated
       })
     }

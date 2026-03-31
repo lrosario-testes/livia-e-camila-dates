@@ -13,9 +13,17 @@ interface Props {
 
 export function PendingPage({ experiences, reviews, currentUser, onNavigate, onSelectExp }: Props) {
   const pending = experiences.filter(exp => {
+    // Hide if user already reviewed
     const myReview = reviews.find(r => r.experienceId === exp.id && r.userName === currentUser)
     return !myReview
   }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+  const formatDate = (d: string, unknown?: boolean) => {
+    if (unknown || !d) return 'Sem data'
+    try {
+      return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+    } catch { return d }
+  }
 
   return (
     <>
@@ -48,15 +56,8 @@ export function PendingPage({ experiences, reviews, currentUser, onNavigate, onS
                       <ExperienceChip experience={exp} />
                       <div className="pending-card-name">{exp.name}</div>
                       <div className="pending-card-date">
-                        {new Date(exp.date + 'T12:00:00').toLocaleDateString('pt-BR', {
-                          day: '2-digit', month: 'short'
-                        })}
+                        {formatDate(exp.date, exp.dateUnknown)}
                       </div>
-                      {exp.tags.length > 0 && (
-                        <div className="mini-tags">
-                          {exp.tags.slice(0, 3).map(t => <span key={t} className="mini-tag">{t}</span>)}
-                        </div>
-                      )}
                     </div>
                     <div className="pending-card-right">
                       {otherReviewed && <div className="other-reviewed-dot" title="A outra já avaliou" />}

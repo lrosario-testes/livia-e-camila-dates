@@ -1,21 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Experience, ExperienceType, ComidaTipo, RestauranteTipo, CompraTipo,
   typeLabels, comidaTipoLabels, restauranteTipoLabels, compraTipoLabels
 } from '../types'
 import { Screen } from './Index'
-import { ChevronLeft, X } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
 import { showToast } from '../components/AppToast'
 
 interface Props {
   onNavigate: (s: Screen) => void
   onSave: (exp: Experience) => void
+  active: boolean
 }
 
 const RESTAURANTE_TIPOS: RestauranteTipo[] = ['pizzaria', 'arabe', 'fastfood', 'japones', 'frutos-do-mar', 'brasileiro', 'italiano', 'outro']
-const SUGGESTED_TAGS = ['date', 'caro', 'favorito', 'horrível', 'não comprar', 'vale voltar', 'delivery', 'especial']
 
-export function NewExperiencePage({ onNavigate, onSave }: Props) {
+export function NewExperiencePage({ onNavigate, onSave, active }: Props) {
   const today = new Date().toISOString().split('T')[0]
   const [type, setType] = useState<ExperienceType | ''>('')
   const [comidaTipo, setComidaTipo] = useState<ComidaTipo | ''>('')
@@ -26,16 +26,25 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
   const [nocinema, setNocinema] = useState(false)
   const [name, setName] = useState('')
   const [date, setDate] = useState(today)
-  const [tags, setTags] = useState<string[]>([])
-  const [tagInput, setTagInput] = useState('')
+  const [dateUnknown, setDateUnknown] = useState(false)
 
-  const addTag = (t: string) => {
-    const clean = t.trim().toLowerCase()
-    if (clean && !tags.includes(clean)) setTags(prev => [...prev, clean])
-    setTagInput('')
-  }
+  // Reset form when screen becomes active
+  useEffect(() => {
+    if (active) {
+      setType('')
+      setComidaTipo('')
+      setRestauranteTipo('')
+      setIsDelivery(false)
+      setIsCaranguejo(false)
+      setCompraTipo('')
+      setNocinema(false)
+      setName('')
+      setDate(new Date().toISOString().split('T')[0])
+      setDateUnknown(false)
+    }
+  }, [active])
 
-  const removeTag = (t: string) => setTags(prev => prev.filter(x => x !== t))
+  const isJogo = type === 'compra' && compraTipo === 'jogo'
 
   const handleSubmit = () => {
     if (!type) return showToast('Selecione o tipo de experiência')
@@ -47,8 +56,9 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
       id: crypto.randomUUID(),
       type: type as ExperienceType,
       name: name.trim(),
-      date,
-      tags,
+      date: isJogo || dateUnknown ? '' : date,
+      dateUnknown: isJogo || dateUnknown,
+      tags: [],
       status: 'pendente',
       createdAt: new Date().toISOString(),
       ...(type === 'comida' && {
@@ -62,6 +72,7 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
       ...(type === 'compra' && {
         compraTipo: compraTipo as CompraTipo,
         ...(compraTipo === 'mercado' && { produtoNome: name.trim() }),
+        ...(compraTipo === 'jogo' && { produtoNome: name.trim() }),
       }),
       ...(type === 'filme' && { nocinema }),
     }
@@ -208,7 +219,8 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
 
         <div className="field-group">
           <label className="field-label">
-            {type === 'compra' && compraTipo === 'mercado' ? 'Nome do produto' :
+            {isJogo ? 'Nome do jogo' :
+             type === 'compra' && compraTipo === 'mercado' ? 'Nome do produto' :
              type === 'filme' ? 'Nome do filme' :
              'Nome do lugar'}
           </label>
@@ -217,6 +229,7 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder={
+              isJogo ? 'Ex: Catan, Dixit, Uno...' :
               type === 'compra' && compraTipo === 'mercado' ? 'Ex: Café Pilão, Energético Monster...' :
               type === 'filme' ? 'Ex: Duna, Divertida Mente...' :
               'Ex: Gelateria Fantasia, Sushi do Bairro...'
@@ -224,53 +237,31 @@ export function NewExperiencePage({ onNavigate, onSave }: Props) {
           />
         </div>
 
-        <div className="field-group">
-          <label className="field-label">Data</label>
-          <input
-            className="field-input"
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-          />
-        </div>
-
-        <div className="field-group">
-          <label className="field-label">Tags <span className="field-optional">(opcional)</span></label>
-          <div className="chip-row chip-row-wrap" style={{ marginBottom: 8 }}>
-            {SUGGESTED_TAGS.map(t => (
+        {!isJogo && (
+          <div className="field-group">
+            <label className="field-label">Data</label>
+            {!dateUnknown && (
+              <input
+                className="field-input"
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+              />
+            )}
+            <div className="toggle-row" style={{ marginTop: 8 }}>
+              <div>
+                <div className="toggle-label">Não lembro a data</div>
+              </div>
               <button
-                key={t}
                 type="button"
-                className={`chip chip-sm ${tags.includes(t) ? 'chip-active' : ''}`}
-                onClick={() => tags.includes(t) ? removeTag(t) : addTag(t)}
+                className={`toggle-btn ${dateUnknown ? 'toggle-on' : ''}`}
+                onClick={() => setDateUnknown(v => !v)}
               >
-                {t}
+                <div className="toggle-thumb" />
               </button>
-            ))}
-          </div>
-          <div className="tag-input-row">
-            <input
-              className="field-input"
-              value={tagInput}
-              onChange={e => setTagInput(e.target.value)}
-              placeholder="Adicionar tag..."
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTag(tagInput) } }}
-            />
-            <button type="button" className="btn btn-outline btn-sm" onClick={() => addTag(tagInput)}>
-              +
-            </button>
-          </div>
-          {tags.length > 0 && (
-            <div className="tags-display">
-              {tags.map(t => (
-                <span key={t} className="tag-badge">
-                  {t}
-                  <button onClick={() => removeTag(t)}><X size={10} /></button>
-                </span>
-              ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <button className="btn btn-primary" onClick={handleSubmit} style={{ marginTop: 8 }}>
           Salvar Experiência

@@ -55,6 +55,12 @@ export const criteriosCompra: RatingCriterion[] = [
   { key: 'custoBeneficio', label: 'Custo-Benefício' },
 ]
 
+export const criteriosJogo: RatingCriterion[] = [
+  { key: 'diversao', label: 'Diversão' },
+  { key: 'rejogabilidade', label: 'Rejogabilidade' },
+  { key: 'complexidade', label: 'Complexidade' },
+]
+
 export interface Experience {
   id: string
   type: ExperienceType
@@ -67,6 +73,7 @@ export interface Experience {
   nocinema?: boolean
   name: string
   date: string
+  dateUnknown?: boolean
   tags: string[]
   status: ExperienceStatus
   createdAt: string
@@ -79,6 +86,7 @@ export interface Review {
   ratings: Record<string, number>
   average: number
   comments: string | null
+  tags: string[]
   createdAt: string
 }
 
@@ -97,7 +105,10 @@ export function getComidaCriteria(exp: Experience): RatingCriterion[] {
 
 export function getExperienceCriteria(exp: Experience): RatingCriterion[] {
   if (exp.type === 'filme') return criteriosFilme
-  if (exp.type === 'compra') return criteriosCompra
+  if (exp.type === 'compra') {
+    if (exp.compraTipo === 'jogo') return criteriosJogo
+    return criteriosCompra
+  }
   return getComidaCriteria(exp)
 }
 
