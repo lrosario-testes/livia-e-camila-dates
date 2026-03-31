@@ -20,11 +20,13 @@ export type Database = {
           compra_tipo: string | null
           created_at: string
           date: string
+          date_unknown: boolean | null
           id: string
           is_caranguejo: boolean | null
           is_delivery: boolean | null
           name: string
           nocinema: boolean | null
+          produto_nome: string | null
           restaurante_tipo: string | null
           status: string
           tags: string[] | null
@@ -35,11 +37,13 @@ export type Database = {
           compra_tipo?: string | null
           created_at?: string
           date?: string
+          date_unknown?: boolean | null
           id?: string
           is_caranguejo?: boolean | null
           is_delivery?: boolean | null
           name: string
           nocinema?: boolean | null
+          produto_nome?: string | null
           restaurante_tipo?: string | null
           status?: string
           tags?: string[] | null
@@ -50,11 +54,13 @@ export type Database = {
           compra_tipo?: string | null
           created_at?: string
           date?: string
+          date_unknown?: boolean | null
           id?: string
           is_caranguejo?: boolean | null
           is_delivery?: boolean | null
           name?: string
           nocinema?: boolean | null
+          produto_nome?: string | null
           restaurante_tipo?: string | null
           status?: string
           tags?: string[] | null
@@ -70,6 +76,7 @@ export type Database = {
           experience_id: string
           id: string
           ratings: Json
+          tags: string[] | null
           user_name: string
         }
         Insert: {
@@ -79,6 +86,7 @@ export type Database = {
           experience_id: string
           id?: string
           ratings?: Json
+          tags?: string[] | null
           user_name: string
         }
         Update: {
@@ -88,6 +96,7 @@ export type Database = {
           experience_id?: string
           id?: string
           ratings?: Json
+          tags?: string[] | null
           user_name?: string
         }
         Relationships: [
