@@ -1,7 +1,8 @@
 import { Experience, Review, UserName } from '../types'
 import { Screen } from './Index'
-import { ChevronLeft, Clock } from 'lucide-react'
+import { ChevronLeft, Clock, Trash2 } from 'lucide-react'
 import { ExperienceChip } from '../components/ExperienceChip'
+import { showToast } from '../components/AppToast'
 
 interface Props {
   experiences: Experience[]
@@ -9,11 +10,11 @@ interface Props {
   currentUser: UserName
   onNavigate: (s: Screen) => void
   onSelectExp: (exp: Experience) => void
+  onDeleteExperience: (id: string) => void
 }
 
-export function PendingPage({ experiences, reviews, currentUser, onNavigate, onSelectExp }: Props) {
+export function PendingPage({ experiences, reviews, currentUser, onNavigate, onSelectExp, onDeleteExperience }: Props) {
   const pending = experiences.filter(exp => {
-    // Hide if user already reviewed
     const myReview = reviews.find(r => r.experienceId === exp.id && r.userName === currentUser)
     return !myReview
   }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -23,6 +24,13 @@ export function PendingPage({ experiences, reviews, currentUser, onNavigate, onS
     try {
       return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
     } catch { return d }
+  }
+
+  const handleDelete = (e: React.MouseEvent, exp: Experience) => {
+    e.stopPropagation()
+    if (!confirm(`Excluir "${exp.name}" e todas as avaliações?`)) return
+    onDeleteExperience(exp.id)
+    showToast('Experiência excluída')
   }
 
   return (
@@ -61,6 +69,13 @@ export function PendingPage({ experiences, reviews, currentUser, onNavigate, onS
                     </div>
                     <div className="pending-card-right">
                       {otherReviewed && <div className="other-reviewed-dot" title="A outra já avaliou" />}
+                      <button
+                        className="icon-btn icon-btn-danger"
+                        onClick={(e) => handleDelete(e, exp)}
+                        style={{ marginRight: 4 }}
+                      >
+                        <Trash2 size={14} />
+                      </button>
                       <div className="pending-cta">Avaliar</div>
                     </div>
                   </div>
