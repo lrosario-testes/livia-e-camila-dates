@@ -91,6 +91,7 @@ function Index() {
               currentUser={currentUser}
               onNavigate={go}
               onSelectExp={(exp) => go('review', exp)}
+              onDeleteExperience={storage.deleteExperience}
             />
           )}
           {s === 'details' && selectedExp && (
