@@ -19,7 +19,7 @@ export type Database = {
           comida_tipo: string | null
           compra_tipo: string | null
           created_at: string
-          date: string
+          date: string | null
           date_unknown: boolean | null
           id: string
           is_caranguejo: boolean | null
@@ -36,7 +36,7 @@ export type Database = {
           comida_tipo?: string | null
           compra_tipo?: string | null
           created_at?: string
-          date?: string
+          date?: string | null
           date_unknown?: boolean | null
           id?: string
           is_caranguejo?: boolean | null
@@ -53,7 +53,7 @@ export type Database = {
           comida_tipo?: string | null
           compra_tipo?: string | null
           created_at?: string
-          date?: string
+          date?: string | null
           date_unknown?: boolean | null
           id?: string
           is_caranguejo?: boolean | null

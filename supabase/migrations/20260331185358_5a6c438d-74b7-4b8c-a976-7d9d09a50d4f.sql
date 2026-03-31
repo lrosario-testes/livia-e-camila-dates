@@ -1,0 +1,2 @@
+ALTER TABLE public.experiences ALTER COLUMN date DROP NOT NULL;
+ALTER TABLE public.experiences ALTER COLUMN date DROP DEFAULT;
