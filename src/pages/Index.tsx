@@ -27,7 +27,16 @@ function Index() {
   const [screen, setScreen] = useState<Screen>('home')
   const [selectedExp, setSelectedExp] = useState<Experience | null>(null)
 
-  if (!currentUser) {
+  if (loading || !currentUser) {
+    if (loading) {
+      return (
+        <div className="app-shell">
+          <div className="empty-state" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+            <p>Carregando...</p>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="app-shell">
         <LoginPage />
