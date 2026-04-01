@@ -22,7 +22,7 @@ export type Screen =
   | 'dashboard'
 
 function Index() {
-  const { currentUser } = useAuth()
+  const { currentUser, loading } = useAuth()
   const storage = useStorage()
   const [screen, setScreen] = useState<Screen>('home')
   const [selectedExp, setSelectedExp] = useState<Experience | null>(null)
