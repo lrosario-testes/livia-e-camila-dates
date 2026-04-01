@@ -1,30 +1,65 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { UserName } from '../types'
+import { supabase } from '../integrations/supabase/client'
+import { Session } from '@supabase/supabase-js'
 
 interface AuthContextType {
   currentUser: UserName | null
-  login: (user: UserName) => void
-  logout: () => void
+  session: Session | null
+  loading: boolean
+  login: (email: string, password: string) => Promise<string | null>
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
+function emailToUserName(email: string): UserName | null {
+  if (email === 'livia@app.local') return 'livia'
+  if (email === 'camila@app.local') return 'camila'
+  return null
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<UserName | null>(() =>
-    localStorage.getItem('lc_user') as UserName | null
-  )
+  const [session, setSession] = useState<Session | null>(null)
+  const [currentUser, setCurrentUser] = useState<UserName | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (currentUser) localStorage.setItem('lc_user', currentUser)
-    else localStorage.removeItem('lc_user')
-  }, [currentUser])
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+      if (session?.user?.email) {
+        setCurrentUser(emailToUserName(session.user.email))
+      } else {
+        setCurrentUser(null)
+      }
+      setLoading(false)
+    })
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      if (session?.user?.email) {
+        setCurrentUser(emailToUserName(session.user.email))
+      }
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const login = async (email: string, password: string): Promise<string | null> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return error.message
+    return null
+  }
+
+  const logout = async () => {
+    await supabase.auth.signOut()
+    setCurrentUser(null)
+    setSession(null)
+  }
 
   return (
-    <AuthContext.Provider value={{
-      currentUser,
-      login: (u) => setCurrentUser(u),
-      logout: () => setCurrentUser(null),
-    }}>
+    <AuthContext.Provider value={{ currentUser, session, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

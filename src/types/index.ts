@@ -90,10 +90,6 @@ export interface Review {
   createdAt: string
 }
 
-export const USER_PASSWORDS: Record<UserName, string> = {
-  livia: 'livia123',
-  camila: 'camila123',
-}
 
 export function getComidaCriteria(exp: Experience): RatingCriterion[] {
   if (exp.comidaTipo === 'gelateria') return criteriosGelateria

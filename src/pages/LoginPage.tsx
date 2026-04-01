@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
-import { UserName, USER_PASSWORDS } from '../types'
+import { UserName } from '../types'
 import { Eye, EyeOff, Heart } from 'lucide-react'
 import { showToast } from '../components/AppToast'
+
+const USER_EMAILS: Record<UserName, string> = {
+  livia: 'livia@app.local',
+  camila: 'camila@app.local',
+}
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -10,17 +15,21 @@ export function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedUser) return
-    if (password === USER_PASSWORDS[selectedUser]) {
-      login(selectedUser)
-      showToast(`Olá, ${selectedUser === 'livia' ? 'Lívia' : 'Camila'}!`)
-    } else {
+    setSubmitting(true)
+    setError('')
+    const errMsg = await login(USER_EMAILS[selectedUser], password)
+    if (errMsg) {
       setError('Senha incorreta, tenta de novo!')
       setPassword('')
+    } else {
+      showToast(`Olá, ${selectedUser === 'livia' ? 'Lívia' : 'Camila'}!`)
     }
+    setSubmitting(false)
   }
 
   return (
@@ -68,9 +77,9 @@ export function LoginPage() {
           </div>
         )}
 
-        <button className="btn btn-primary" type="submit" disabled={!selectedUser || !password}>
+        <button className="btn btn-primary" type="submit" disabled={!selectedUser || !password || submitting}>
           <Heart size={16} fill="currentColor" />
-          Entrar
+          {submitting ? 'Entrando...' : 'Entrar'}
         </button>
         <p className="login-hint">Só vocês duas têm acesso</p>
       </form>
