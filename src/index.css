@@ -378,6 +378,7 @@ body {
 .home-hero {
   text-align: center;
   padding: 40px 24px 24px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
   background: linear-gradient(160deg, #fff5f8 0%, var(--cream) 100%);
   border-bottom: 1px solid var(--border);
 }
