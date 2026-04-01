@@ -81,6 +81,7 @@ body {
 .screen-content {
   flex: 1;
   padding: 20px 20px 32px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }

@@ -88,7 +88,7 @@ export function ReviewPage({ experience, reviews, currentUser, onNavigate, onSav
     onSave(review)
     setSaving(false)
     showToast('Avaliação salva!')
-    onNavigate('feed')
+    onNavigate('pending')
   }
 
   const formatDate = (d: string, unknown?: boolean) => {
