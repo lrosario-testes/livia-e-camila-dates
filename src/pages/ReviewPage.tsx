@@ -24,6 +24,18 @@ export function ReviewPage({ experience, reviews, currentUser, onNavigate, onSav
   const [tagInput, setTagInput] = useState('')
   const [saving, setSaving] = useState(false)
 
+  // Reset form when experience changes (navigating to review a different item)
+  const expId = experience.id
+  const [lastExpId, setLastExpId] = useState(expId)
+  if (expId !== lastExpId) {
+    setLastExpId(expId)
+    setRatings({})
+    setComments('')
+    setTags([])
+    setTagInput('')
+    setSaving(false)
+  }
+
   const alreadyReviewed = reviews.some(
     r => r.experienceId === experience.id && r.userName === currentUser
   )
@@ -76,7 +88,7 @@ export function ReviewPage({ experience, reviews, currentUser, onNavigate, onSav
     onSave(review)
     setSaving(false)
     showToast('Avaliação salva!')
-    onNavigate('feed')
+    onNavigate('pending')
   }
 
   const formatDate = (d: string, unknown?: boolean) => {

@@ -29,7 +29,9 @@ function getLabel(exp: Experience) {
 
 function getColor(exp: Experience): string {
   if (exp.type === 'filme') return 'chip-filme'
-  if (exp.type === 'compra') return 'chip-compra'
+  if (exp.type === 'compra') {
+    return exp.compraTipo === 'jogo' ? 'chip-jogo' : 'chip-mercado'
+  }
   if (exp.comidaTipo === 'gelateria') return 'chip-gelateria'
   if (exp.comidaTipo === 'cafeteria') return 'chip-cafeteria'
   return 'chip-restaurante'

@@ -19,6 +19,8 @@
   --c-restaurante: #e07d36;
   --c-filme: #5b6de8;
   --c-compra: #2ca88a;
+  --c-jogo: #7c5cbf;
+  --c-mercado: #d4892a;
 
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.07);
   --shadow-md: 0 6px 24px rgba(0,0,0,0.10);
@@ -79,6 +81,7 @@ body {
 .screen-content {
   flex: 1;
   padding: 20px 20px 32px;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 32px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -89,6 +92,7 @@ body {
 
 .screen-header {
   padding: 18px 20px 0;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 18px);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -290,7 +294,7 @@ body {
 
 .toast {
   position: fixed;
-  bottom: 28px; left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 28px); left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: var(--ink);
   color: white;
@@ -374,6 +378,7 @@ body {
 .home-hero {
   text-align: center;
   padding: 40px 24px 24px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 40px);
   background: linear-gradient(160deg, #fff5f8 0%, var(--cream) 100%);
   border-bottom: 1px solid var(--border);
 }
@@ -451,6 +456,8 @@ body {
 .chip-restaurante { background: #fef3e8; color: var(--c-restaurante); }
 .chip-filme      { background: #eef0fd; color: var(--c-filme); }
 .chip-compra     { background: #d7f5ef; color: var(--c-compra); }
+.chip-jogo       { background: #ede9fe; color: var(--c-jogo); }
+.chip-mercado    { background: #fef3e8; color: var(--c-mercado); }
 
 /* ── Pending Page ─────────────────────────────────────────────*/
 
