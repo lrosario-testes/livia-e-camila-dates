@@ -453,6 +453,8 @@ body {
 .chip-restaurante { background: #fef3e8; color: var(--c-restaurante); }
 .chip-filme      { background: #eef0fd; color: var(--c-filme); }
 .chip-compra     { background: #d7f5ef; color: var(--c-compra); }
+.chip-jogo       { background: #ede9fe; color: var(--c-jogo); }
+.chip-mercado    { background: #fef3e8; color: var(--c-mercado); }
 
 /* ── Pending Page ─────────────────────────────────────────────*/
 
